@@ -7,48 +7,136 @@ WhatsApp, SMS, atau email yang mencurigakan.
 Tempel tautannya, CekURL memberi **skor risiko 0–100** beserta alasannya
 dalam Bahasa Indonesia: `AMAN`, `WASPADA`, atau `BAHAYA`.
 
+Sepenuhnya offline, tanpa dependensi tambahan — cukup Python 3.10+.
+
 ## Cara memakai
 
-Tidak perlu instalasi apa pun selain Python 3.10+ (tanpa dependensi tambahan).
+### Cek satu tautan
 
 ```bash
-# Cek satu tautan
 python -m cekurl.cli cek https://www.google.com
-
-# Keluaran ringkas untuk mesin (JSON)
-python -m cekurl.cli cek https://bit.ly/contoh --json
-
-# Lihat versi
-python -m cekurl.cli --version
-
-# Cek semua tautan di dalam sebuah pesan (argumen atau stdin)
-python -m cekurl.cli pesan "Halo! Klaim hadiahmu di https://bca-login.xyz/hadiah, info resmi di https://www.bca.co.id"
-echo "Cek https://dana-promo.com/klaim-bonus ya" | python -m cekurl.cli pesan
-
-# Cek banyak tautan dari berkas (satu URL per baris, # untuk komentar)
-python -m cekurl.cli batch --berkas contoh/daftar.txt
 ```
 
-Atau instal sekali lalu pakai perintah `cekurl`:
+```
+Tautan : https://www.google.com
+Skor   : 0/100 — AMAN
+Tidak ditemukan sinyal mencurigakan.
+```
+
+Tautan tanpa skema otomatis dilengkapi `https://`, dan skema selain
+`http`/`https` (mis. `ftp`) ditolak dengan pesan error.
+
+```bash
+python -m cekurl.cli cek www.google.com   # sama dengan https://www.google.com
+```
+
+### Keluaran JSON
+
+Untuk dipakai program lain, tambahkan `--json`:
+
+```bash
+python -m cekurl.cli cek https://www.google.com --json
+```
+
+```json
+{
+  "url": "https://www.google.com",
+  "host": "www.google.com",
+  "skor": 0,
+  "verdict": "AMAN",
+  "sinyal": []
+}
+```
+
+### Cek tautan dari teks pesan
+
+Tempel pesan WhatsApp/SMS sebagai argumen — atau lewat stdin bila tanpa
+argumen — dan semua tautan di dalamnya diperiksa satu per satu:
+
+```bash
+python -m cekurl.cli pesan "Halo! Paket kamu tertunda, klaim di https://bit.ly/paket-tertunda ya. Info resmi: https://www.bca.co.id"
+
+echo "Cek https://dana-promo.com/klaim-bonus ya" | python -m cekurl.cli pesan
+```
+
+```
+1. https://bit.ly/paket-tertunda
+   Skor: 35/100 — WASPADA
+   Sinyal: Pemendek URL (bit.ly) menyembunyikan tujuan asli tautan.; Kata mencurigakan di tautan: paket, tertunda.
+2. https://www.bca.co.id
+   Skor: 0/100 — AMAN
+Ringkasan: 2 tautan — AMAN 1, WASPADA 1, BAHAYA 0
+```
+
+### Cek banyak tautan (batch)
+
+Satu URL per baris; baris kosong dan komentar (`#`) dilewati:
+
+```bash
+python -m cekurl.cli batch --berkas contoh/cekurl-contoh.txt
+```
+
+```
+1. https://www.google.com
+   Skor: 0/100 — AMAN
+2. https://www.bca.co.id
+   Skor: 0/100 — AMAN
+3. https://bit.ly/paket-tertunda
+   Skor: 35/100 — WASPADA
+   Sinyal: Pemendek URL (bit.ly) menyembunyikan tujuan asli tautan.; Kata mencurigakan di tautan: paket, tertunda.
+4. http://203.0.113.5/login-gratis
+   Skor: 60/100 — BAHAYA
+   Sinyal: Tautan tidak terenkripsi (http, bukan https).; Host memakai alamat IP langsung, bukan nama domain.; Kata mencurigakan di tautan: gratis, login.
+5. https://bca-co.id/verifikasi-hadiah
+   Skor: 45/100 — WASPADA
+   Sinyal: Domain meniru brand BCA — domainnya mirip domain resmi BCA (bca.co.id) — kemungkinan salah ketik yang disengaja (resmi: bca.co.id).; Kata mencurigakan di tautan: hadiah, verifikasi.
+Ringkasan: 5 tautan — AMAN 2, WASPADA 2, BAHAYA 1
+```
+
+Bila berkasnya tidak ada, CekURL memberi pesan yang jelas dan keluar
+dengan kode 1:
+
+```
+Error: berkas '/tmp/cekurl-tidak-ada.txt' tidak ditemukan. Periksa lagi nama dan lokasi berkasnya.
+```
+
+### Instal sekali, pakai perintah `cekurl`
 
 ```bash
 pip install .
 cekurl cek https://www.google.com
+cekurl --version   # cekurl 0.1.0
 ```
 
-## Yang diperiksa
+## Contoh nyata dengan angka
 
-| Sinyal | Keterangan |
-| --- | --- |
-| Skema `http` | Tautan tidak terenkripsi |
-| Host berupa alamat IP | Tautan memakai angka IP, bukan nama domain |
-| Pemendek URL | bit.ly, s.id, tinyurl, dan sejenisnya menyembunyikan tujuan asli |
-| TLD rawan disalahgunakan | `.xyz`, `.top`, `.click`, dan sejenisnya |
-| Karakter menipu | `@` di tengah URL, `xn--` (punycode), subdomain berlapis |
-| Kata kunci phishing | `verifikasi`, `hadiah`, `gratis`, `klaim`, `blokir`, dan sejenisnya |
-| Domain meniru brand lokal | BCA, BRI, GoPay, DANA, Shopee, Tokopedia, PLN, dan lainnya |
-| Tautan dari teks pesan | Tempel pesan WhatsApp/SMS, semua tautan di dalamnya diperiksa |
-| Mode batch | Satu URL per baris dari berkas, lengkap dengan rekap akhir |
+| Tautan | Skor | Verdict | Sinyal yang terhitung |
+| --- | --- | --- | --- |
+| `https://www.google.com` | 0 | AMAN | — |
+| `https://bit.ly/paket-tertunda` | 35 | WASPADA | Pemendek URL +15, kata kunci paket & tertunda +20 |
+| `https://dana-promo.com/klaim-bonus` | 45 | WASPADA | Meniru brand DANA +25, kata kunci bonus, klaim & promo +20 |
+| `https://bca-co.id/verifikasi-hadiah` | 45 | WASPADA | Meniru brand BCA +25, kata kunci hadiah & verifikasi +20 |
+| `http://203.0.113.5/login-gratis` | 60 | BAHAYA | http +10, alamat IP +30, kata kunci gratis & login +20 |
+
+## Yang diperiksa — sinyal dan poin
+
+| Sinyal | Poin | Keterangan |
+| --- | --- | --- |
+| Skema `http` | +10 | Tautan tidak terenkripsi |
+| Host berupa alamat IP | +30 | Tautan memakai angka IP, bukan nama domain |
+| Pemendek URL | +15 | bit.ly, s.id, tinyurl, dan sejenisnya menyembunyikan tujuan asli |
+| TLD rawan disalahgunakan | +10 | `.xyz`, `.top`, `.click`, dan sejenisnya |
+| Punycode (`xn--`) | +15 | Karakter non-ASCII yang disamarkan |
+| Trik `@` di tengah URL | +25 | Bagian sebelum `@` diabaikan browser |
+| Domain meniru brand lokal | +25 | Typo-squat, brand di label lain, atau TLD berbeda |
+| Subdomain berlapis (≥ 5 bagian) | +10 | Sering dipakai untuk menyamar |
+| Nama domain sangat panjang (> 30 karakter) | +5 | Pola tautan menipu |
+| Banyak tanda hubung (≥ 4) | +5 | Pola tautan menipu |
+| Port tidak standar | +5 | Bukan port 80/443 |
+| Kata kunci phishing | +10 per kata, maks +20 | `verifikasi`, `hadiah`, `gratis`, `klaim`, `blokir`, dan sejenisnya |
+
+Kata kunci yang merupakan bagian dari kata kunci lain (mis. `verif` di
+dalam `verifikasi`) hanya dihitung sekali.
 
 ## Deteksi brand lokal
 
@@ -80,12 +168,41 @@ Setiap sinyal menambah poin risiko. Total skor menentukan verdict:
 > tautan yang lolos dari pola ini tetap bisa berbahaya. Bila ragu, jangan
 > diklik dan konfirmasi lewat kanal resmi.
 
+## Data contoh
+
+Berkas `contoh/cekurl-contoh.txt` berisi 5 tautan contoh (2 aman, 2
+waspada, 1 bahaya) beserta contoh pesan WhatsApp dan cara mencobanya:
+
+```bash
+python -m cekurl.cli batch --berkas contoh/cekurl-contoh.txt
+python -m cekurl.cli pesan "Halo! Paket kamu tertunda, klaim di https://bit.ly/paket-tertunda ya. Info resmi: https://www.bca.co.id"
+```
+
+Berkas `contoh/daftar.txt` berisi daftar tautan yang lebih singkat untuk
+latihan mode batch.
+
+## Menjalankan test
+
+31 unit test (analisis skor/sinyal, deteksi brand, CLI end-to-end):
+
+```bash
+python3 -m unittest discover -s tests
+```
+
+```
+Ran 31 tests in 0.5s
+
+OK
+```
+
 ## Rencana
 
 - [x] Analisis URL dasar + skor risiko + CLI
-- [x] Deteksi domain meniru brand lokal (Day-2)
-- [x] Cek tautan dari teks pesan + mode batch (Day-2)
-- [ ] Unit test + data contoh (Day-2)
+- [x] Deteksi domain meniru brand lokal
+- [x] Cek tautan dari teks pesan + mode batch
+- [x] Unit test + data contoh
+- [x] README lengkap + polish CLI
+- [ ] Skor reputasi domain / daftar putih domain resmi (Day-2)
 
 ## Lisensi
 

@@ -128,9 +128,18 @@ def _perintah_pesan(args):
 def _perintah_batch(args):
     try:
         daftar_url = baca_daftar_berkas(args.berkas)
+    except FileNotFoundError:
+        print(
+            f"Error: berkas '{args.berkas}' tidak ditemukan. "
+            "Periksa lagi nama dan lokasi berkasnya.",
+            file=sys.stderr,
+        )
+        return 1
     except OSError as e:
-        print(f"Error: tidak bisa membaca berkas '{args.berkas}': {e}.",
-              file=sys.stderr)
+        print(
+            f"Error: tidak bisa membaca berkas '{args.berkas}': {e}.",
+            file=sys.stderr,
+        )
         return 1
     if not daftar_url:
         print(

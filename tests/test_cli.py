@@ -91,7 +91,8 @@ class TestPerintahBatch(unittest.TestCase):
     def test_batch_berkas_tidak_ada_exit_bukan_nol(self):
         hasil = jalankan("batch", "--berkas", "/tmp/cekurl-tidak-ada.txt")
         self.assertNotEqual(hasil.returncode, 0)
-        self.assertIn("Error", hasil.stderr)
+        self.assertIn("tidak ditemukan", hasil.stderr)
+        self.assertIn("Periksa lagi nama dan lokasi berkasnya", hasil.stderr)
 
 
 if __name__ == "__main__":
