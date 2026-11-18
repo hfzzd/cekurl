@@ -1,0 +1,23 @@
+# Contoh data CekURL
+# ================
+# Coba dengan:
+#   python -m cekurl.cli batch --berkas contoh/cekurl-contoh.txt
+#
+# Baris kosong dan baris komentar (#) dilewati.
+
+# AMAN — domain bersih, skor 0
+https://www.google.com
+https://www.bca.co.id
+
+# WASPADA — pemendek URL + kata kunci "paket" dan "tertunda", skor 35
+https://bit.ly/paket-tertunda
+
+# BAHAYA — http (+10) + alamat IP (+30) + kata kunci "login" dan "gratis" (+20), skor 60
+http://203.0.113.5/login-gratis
+
+# WASPADA — domain meniru BCA (typo-squat) + kata kunci "verifikasi" dan "hadiah", skor 45
+https://bca-co.id/verifikasi-hadiah
+
+# Contoh pesan WhatsApp — coba dengan:
+#   python -m cekurl.cli pesan "Halo! Paket kamu tertunda, klaim di https://bit.ly/paket-tertunda ya. Info resmi: https://www.bca.co.id"
+# Hasilnya: 2 tautan — 1 WASPADA (bit.ly) dan 1 AMAN (bca.co.id).
