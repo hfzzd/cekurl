@@ -11,6 +11,8 @@ import ipaddress
 import re
 from urllib.parse import urlparse
 
+from cekurl.brand import deteksi_brand
+
 # Pemendek URL populer — menyembunyikan tujuan asli tautan.
 PEMENEK_URL = {
     "bit.ly", "tinyurl.com", "s.id", "gg.gg", "t.co", "goo.gl",
@@ -127,7 +129,16 @@ def analisis_url(url):
         if host.count("-") >= 4:
             tambah("Nama domain memakai banyak tanda hubung — pola tautan menipu.", 5)
 
-    # 9. Trik '@' — bagian sebelum @ diabaikan browser.
+        # 9. Domain meniru brand lokal (bank, e-wallet, e-commerce, dsb).
+        tiruan = deteksi_brand(host)
+        if tiruan:
+            tambah(
+                f"Domain meniru brand {tiruan['brand']} — {tiruan['alasan']} "
+                f"(resmi: {', '.join(tiruan['domain_resmi'])}).",
+                25,
+            )
+
+    # 10. Trik '@' — bagian sebelum @ diabaikan browser.
     if "@" in (parsed.netloc or ""):
         tambah(
             "Tautan memakai '@' — bagian sebelum @ diabaikan, tujuan aslinya "
@@ -135,7 +146,7 @@ def analisis_url(url):
             25,
         )
 
-    # 10. Port tidak standar.
+    # 11. Port tidak standar.
     try:
         port = parsed.port
     except ValueError:
@@ -143,7 +154,7 @@ def analisis_url(url):
     if port and port not in (80, 443):
         tambah(f"Tautan memakai port tidak standar ({port}).", 5)
 
-    # 11. Kata kunci phishing di seluruh URL.
+    # 12. Kata kunci phishing di seluruh URL.
     url_rendah = url.lower()
     ketemu = sorted(k for k in KATA_KUNCI_PHISHING if k in url_rendah)
     # Buang kata yang merupakan bagian dari kata lain yang juga ketemu
