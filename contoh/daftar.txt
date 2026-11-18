@@ -1,0 +1,7 @@
+# Contoh daftar tautan untuk `cekurl batch --berkas contoh/daftar.txt`
+# Satu URL per baris. Baris kosong dan baris komentar (#) dilewati.
+https://www.google.com
+https://www.bca.co.id
+https://bca-login.xyz/verifikasi-hadiah
+https://dana-promo.com/klaim-bonus
+https://bit.ly/paket-tertunda-klaim-hadiah

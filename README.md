@@ -20,6 +20,13 @@ python -m cekurl.cli cek https://bit.ly/contoh --json
 
 # Lihat versi
 python -m cekurl.cli --version
+
+# Cek semua tautan di dalam sebuah pesan (argumen atau stdin)
+python -m cekurl.cli pesan "Halo! Klaim hadiahmu di https://bca-login.xyz/hadiah, info resmi di https://www.bca.co.id"
+echo "Cek https://dana-promo.com/klaim-bonus ya" | python -m cekurl.cli pesan
+
+# Cek banyak tautan dari berkas (satu URL per baris, # untuk komentar)
+python -m cekurl.cli batch --berkas contoh/daftar.txt
 ```
 
 Atau instal sekali lalu pakai perintah `cekurl`:
@@ -39,8 +46,26 @@ cekurl cek https://www.google.com
 | TLD rawan disalahgunakan | `.xyz`, `.top`, `.click`, dan sejenisnya |
 | Karakter menipu | `@` di tengah URL, `xn--` (punycode), subdomain berlapis |
 | Kata kunci phishing | `verifikasi`, `hadiah`, `gratis`, `klaim`, `blokir`, dan sejenisnya |
-| Domain meniru brand lokal | BCA, BRI, GoPay, DANA, Shopee, Tokopedia, PLN, dan lainnya *(Day-2)* |
-| Tautan dari teks pesan | Tempel pesan WhatsApp/SMS, semua tautan di dalamnya diperiksa *(Day-2)* |
+| Domain meniru brand lokal | BCA, BRI, GoPay, DANA, Shopee, Tokopedia, PLN, dan lainnya |
+| Tautan dari teks pesan | Tempel pesan WhatsApp/SMS, semua tautan di dalamnya diperiksa |
+| Mode batch | Satu URL per baris dari berkas, lengkap dengan rekap akhir |
+
+## Deteksi brand lokal
+
+CekURL mengenali 19 brand Indonesia — bank (BCA, BRI, Mandiri, BNI, CIMB,
+Danamon, Permata), e-wallet (GoPay, DANA, OVO), e-commerce (Shopee,
+Tokopedia, Lazada, Bukalapak, Blibli), serta PLN, Telkomsel, Kominfo, dan
+BPJS — lalu menandai domain yang meniru mereka (**+25 poin**):
+
+- **Typo-squat**: domain hanya beda 1–2 huruf dari domain resmi
+  (mis. `bc4.co.id` meniru `bca.co.id`).
+- **Nama brand di label lain**: brand muncul sebagai bagian domain
+  (mis. `bca-login.xyz`, `dana-promo.com`).
+- **TLD berbeda**: nama brand dipakai dengan TLD yang bukan TLD resmi
+  (mis. `bca.com` padahal resminya `bca.co.id`).
+
+Domain resmi brand itu sendiri (termasuk subdomainnya, mis.
+`login.bca.co.id`) tidak ditandai.
 
 ## Cara kerja skor
 
@@ -58,8 +83,8 @@ Setiap sinyal menambah poin risiko. Total skor menentukan verdict:
 ## Rencana
 
 - [x] Analisis URL dasar + skor risiko + CLI
-- [ ] Deteksi domain meniru brand lokal (Day-2)
-- [ ] Cek tautan dari teks pesan + mode batch (Day-2)
+- [x] Deteksi domain meniru brand lokal (Day-2)
+- [x] Cek tautan dari teks pesan + mode batch (Day-2)
 - [ ] Unit test + data contoh (Day-2)
 
 ## Lisensi
