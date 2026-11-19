@@ -67,6 +67,11 @@ def _domain_bawaan():
     return bawaan
 
 
+def daftar_putih_bawaan():
+    """Daftar domain resmi bawaan, terurut (untuk perintah `putih daftar`)."""
+    return sorted(_domain_bawaan())
+
+
 def _jalur_putih_kustom():
     """Lokasi berkas daftar putih kustom."""
     dari_env = os.environ.get("CEKURL_PUTIH")

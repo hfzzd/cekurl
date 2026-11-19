@@ -7,7 +7,13 @@ import sys
 
 from cekurl import __version__
 from cekurl.analisis import analisis_url, format_hasil
-from cekurl.putih import cek_daftar_putih
+from cekurl.putih import (
+    cek_daftar_putih,
+    daftar_putih_bawaan,
+    hapus_putih_kustom,
+    muat_putih_kustom,
+    tambah_putih_kustom,
+)
 
 # URL di dalam teks: http(s):// lalu karakter apa pun kecuali spasi dan
 # tanda yang jelas bukan bagian URL (kurung sudut, tanda kutip).
@@ -82,6 +88,17 @@ def _parser():
         "cek", help="Periksa apakah sebuah domain ada di daftar putih."
     )
     putih_cek.add_argument("domain", help="Nama domain yang mau diperiksa")
+    putih_tambah = putih_sub.add_parser(
+        "tambah", help="Tambahkan domain sendiri ke daftar putih."
+    )
+    putih_tambah.add_argument("domain", help="Nama domain yang dipercaya")
+    putih_hapus = putih_sub.add_parser(
+        "hapus", help="Hapus domain dari daftar putih kustom."
+    )
+    putih_hapus.add_argument("domain", help="Nama domain yang mau dihapus")
+    putih_sub.add_parser(
+        "daftar", help="Tampilkan isi daftar putih."
+    )
     return parser
 
 
@@ -182,6 +199,42 @@ def _perintah_putih_cek(args):
     return 1
 
 
+def _perintah_putih_tambah(args):
+    try:
+        domain = tambah_putih_kustom(args.domain)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    print(f"Domain '{domain}' ditambahkan ke daftar putih kustom.")
+    return 0
+
+
+def _perintah_putih_hapus(args):
+    try:
+        domain = hapus_putih_kustom(args.domain)
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    print(f"Domain '{domain}' dihapus dari daftar putih kustom.")
+    return 0
+
+
+def _perintah_putih_daftar(args):
+    bawaan = daftar_putih_bawaan()
+    kustom = muat_putih_kustom()
+    print(f"Daftar putih bawaan: {len(bawaan)} domain.")
+    if kustom:
+        print(f"Daftar putih kustom ({len(kustom)}):")
+        for domain in kustom:
+            print(f"  - {domain}")
+    else:
+        print(
+            "Belum ada domain kustom — tambah dengan: "
+            "cekurl putih tambah DOMAIN"
+        )
+    return 0
+
+
 def main(argv=None):
     parser = _parser()
     args = parser.parse_args(argv)
@@ -203,6 +256,12 @@ def main(argv=None):
     if args.perintah == "putih":
         if args.subperintah == "cek":
             return _perintah_putih_cek(args)
+        if args.subperintah == "tambah":
+            return _perintah_putih_tambah(args)
+        if args.subperintah == "hapus":
+            return _perintah_putih_hapus(args)
+        if args.subperintah == "daftar":
+            return _perintah_putih_daftar(args)
     parser.print_help()
     return 0
 

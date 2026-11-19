@@ -166,6 +166,22 @@ python -m cekurl.cli putih cek bca.co.id        # ada → keluar 0
 python -m cekurl.cli putih cek bca-co.id        # tidak ada → keluar 1
 ```
 
+### Daftar putih kustom (domain kepercayaan sendiri)
+
+Punya domain yang kamu percaya tapi belum ada di daftar bawaan — mis.
+situs kampus atau kantor? Tambahkan sendiri; tersimpan di
+`~/.config/cekurl/putih.json` dan langsung dipakai perintah `cek`:
+
+```bash
+python -m cekurl.cli putih tambah kampusku.ac.id
+python -m cekurl.cli putih daftar     # lihat isi daftar putih
+python -m cekurl.cli putih hapus kampusku.ac.id
+```
+
+Domain yang sudah ada di daftar bawaan tidak bisa ditambahkan lagi, dan
+domain kustom yang sudah terdaftar tidak bisa ditambahkan dua kali —
+keduanya ditolak dengan pesan yang jelas.
+
 ## Deteksi brand lokal
 
 CekURL mengenali 19 brand Indonesia — bank (BCA, BRI, Mandiri, BNI, CIMB,
