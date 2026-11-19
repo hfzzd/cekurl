@@ -7,6 +7,7 @@ import sys
 
 from cekurl import __version__
 from cekurl.analisis import analisis_url, format_hasil
+from cekurl.putih import cek_daftar_putih
 
 # URL di dalam teks: http(s):// lalu karakter apa pun kecuali spasi dan
 # tanda yang jelas bukan bagian URL (kurung sudut, tanda kutip).
@@ -72,6 +73,15 @@ def _parser():
         required=True,
         help="Berkas daftar tautan (satu URL per baris, # untuk komentar)",
     )
+
+    putih = sub.add_parser(
+        "putih", help="Kelola daftar putih domain resmi yang dipercaya."
+    )
+    putih_sub = putih.add_subparsers(dest="subperintah", required=True)
+    putih_cek = putih_sub.add_parser(
+        "cek", help="Periksa apakah sebuah domain ada di daftar putih."
+    )
+    putih_cek.add_argument("domain", help="Nama domain yang mau diperiksa")
     return parser
 
 
@@ -151,6 +161,27 @@ def _perintah_batch(args):
     return _tampilkan_banyak(daftar_url)
 
 
+def _perintah_putih_cek(args):
+    """Periksa apakah domain ada di daftar putih (bawaan/kustom/akhiran)."""
+    domain = args.domain.strip()
+    if "://" in domain:
+        from urllib.parse import urlparse
+
+        domain = urlparse(domain).hostname or domain
+    hasil = cek_daftar_putih(domain)
+    if hasil:
+        print(
+            f"Domain '{domain}' ada di daftar putih "
+            f"({hasil['sumber']}: {hasil['domain']})."
+        )
+        return 0
+    print(
+        f"Domain '{domain}' tidak ada di daftar putih.",
+        file=sys.stderr,
+    )
+    return 1
+
+
 def main(argv=None):
     parser = _parser()
     args = parser.parse_args(argv)
@@ -169,6 +200,9 @@ def main(argv=None):
         return _perintah_pesan(args)
     if args.perintah == "batch":
         return _perintah_batch(args)
+    if args.perintah == "putih":
+        if args.subperintah == "cek":
+            return _perintah_putih_cek(args)
     parser.print_help()
     return 0
 

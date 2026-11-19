@@ -138,6 +138,34 @@ cekurl --version   # cekurl 0.1.0
 Kata kunci yang merupakan bagian dari kata kunci lain (mis. `verif` di
 dalam `verifikasi`) hanya dihitung sekali.
 
+## Daftar putih domain resmi
+
+Domain resmi yang sudah dikenal — domain brand lokal (BCA, BRI, GoPay,
+Shopee, dan seterusnya), layanan global tepercaya (Google, GitHub,
+Wikipedia, dan sejenisnya), serta semua domain berakhiran `.go.id`,
+`.ac.id`, dan `.sch.id` — langsung dinilai **AMAN (skor 0)** apa pun isi
+tautannya. Alasannya sederhana: penipu tidak bisa memakai domain resmi
+itu; yang mereka pakai adalah domain *mirip* (typo-squat, TLD berbeda),
+dan domain mirip itu tetap tertangkap deteksi brand.
+
+```bash
+python -m cekurl.cli cek https://www.bca.co.id
+```
+
+```
+Tautan : https://www.bca.co.id
+Skor   : 0/100 — AMAN
+Domain resmi terverifikasi (daftar putih bawaan: bca.co.id).
+Tidak ditemukan sinyal mencurigakan.
+```
+
+Periksa apakah sebuah domain ada di daftar putih:
+
+```bash
+python -m cekurl.cli putih cek bca.co.id        # ada → keluar 0
+python -m cekurl.cli putih cek bca-co.id        # tidak ada → keluar 1
+```
+
 ## Deteksi brand lokal
 
 CekURL mengenali 19 brand Indonesia — bank (BCA, BRI, Mandiri, BNI, CIMB,

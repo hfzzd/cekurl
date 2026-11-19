@@ -12,6 +12,7 @@ import re
 from urllib.parse import urlparse
 
 from cekurl.brand import deteksi_brand
+from cekurl.putih import cek_daftar_putih
 
 # Pemendek URL populer — menyembunyikan tujuan asli tautan.
 PEMENEK_URL = {
@@ -73,6 +74,23 @@ def analisis_url(url):
     host = (parsed.hostname or "").lower()
     if not host:
         raise ValueError("URL tidak punya nama host.")
+
+    # 0. Daftar putih — domain resmi dinilai AMAN apa pun isi tautannya:
+    #    penipu tidak bisa memakai domain resmi itu; yang mereka pakai
+    #    adalah domain mirip, dan itu tetap tertangkap deteksi brand.
+    putih = cek_daftar_putih(host)
+    if putih:
+        return {
+            "url": url,
+            "host": host,
+            "skor": 0,
+            "verdict": "AMAN",
+            "sinyal": [],
+            "catatan": (
+                f"Domain resmi terverifikasi ({putih['sumber']}: "
+                f"{putih['domain']})."
+            ),
+        }
 
     sinyal = []
 
@@ -177,6 +195,7 @@ def analisis_url(url):
         "skor": skor,
         "verdict": _verdict(skor),
         "sinyal": sinyal,
+        "catatan": "",
     }
 
 
@@ -186,6 +205,8 @@ def format_hasil(hasil):
         f"Tautan : {hasil['url']}",
         f"Skor   : {hasil['skor']}/100 — {hasil['verdict']}",
     ]
+    if hasil.get("catatan"):
+        baris.append(hasil["catatan"])
     if not hasil["sinyal"]:
         baris.append("Tidak ditemukan sinyal mencurigakan.")
     else:
