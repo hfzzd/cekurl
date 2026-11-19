@@ -20,6 +20,7 @@ python -m cekurl.cli cek https://www.google.com
 ```
 Tautan : https://www.google.com
 Skor   : 0/100 — AMAN
+Reputasi: 100/100 — TERPERCAYA
 Tidak ditemukan sinyal mencurigakan.
 ```
 
@@ -44,7 +45,18 @@ python -m cekurl.cli cek https://www.google.com --json
   "host": "www.google.com",
   "skor": 0,
   "verdict": "AMAN",
-  "sinyal": []
+  "sinyal": [],
+  "reputasi": {
+    "skor": 100,
+    "tier": "TERPERCAYA",
+    "faktor": [
+      {
+        "alasan": "Domain resmi terverifikasi (daftar putih bawaan: google.com).",
+        "poin": 50
+      }
+    ]
+  },
+  "catatan": "Domain resmi terverifikasi (daftar putih bawaan: google.com)."
 }
 ```
 
@@ -110,13 +122,17 @@ cekurl --version   # cekurl 0.1.0
 
 ## Contoh nyata dengan angka
 
-| Tautan | Skor | Verdict | Sinyal yang terhitung |
-| --- | --- | --- | --- |
-| `https://www.google.com` | 0 | AMAN | — |
-| `https://bit.ly/paket-tertunda` | 35 | WASPADA | Pemendek URL +15, kata kunci paket & tertunda +20 |
-| `https://dana-promo.com/klaim-bonus` | 45 | WASPADA | Meniru brand DANA +25, kata kunci bonus, klaim & promo +20 |
-| `https://bca-co.id/verifikasi-hadiah` | 45 | WASPADA | Meniru brand BCA +25, kata kunci hadiah & verifikasi +20 |
-| `http://203.0.113.5/login-gratis` | 60 | BAHAYA | http +10, alamat IP +30, kata kunci gratis & login +20 |
+| Tautan | Skor | Verdict | Reputasi | Sinyal yang terhitung |
+| --- | --- | --- | --- | --- |
+| `https://www.google.com` | 0 | AMAN | 100 TERPERCAYA | — |
+| `https://www.bca.co.id` | 0 | AMAN | 100 TERPERCAYA | — |
+| `https://bit.ly/paket-tertunda` | 35 | WASPADA | 35 MERAGUKAN | Pemendek URL +15, kata kunci paket & tertunda +20 |
+| `https://dana-promo.com/klaim-bonus` | 45 | WASPADA | 30 MERAGUKAN | Meniru brand DANA +25, kata kunci bonus, klaim & promo +20 |
+| `https://bca-co.id/verifikasi-hadiah` | 45 | WASPADA | 40 NETRAL | Meniru brand BCA +25, kata kunci hadiah & verifikasi +20 |
+| `http://203.0.113.5/login-gratis` | 60 | BAHAYA | 0 MERAGUKAN | http +10, alamat IP +30, kata kunci gratis & login +20 |
+
+Kolom Reputasi adalah skor reputasi domainnya (lihat perintah `reputasi`
+di bawah): domain resmi terverifikasi selalu 100, alamat IP selalu 0.
 
 ## Yang diperiksa — sinyal dan poin
 
@@ -155,6 +171,7 @@ python -m cekurl.cli cek https://www.bca.co.id
 ```
 Tautan : https://www.bca.co.id
 Skor   : 0/100 — AMAN
+Reputasi: 100/100 — TERPERCAYA
 Domain resmi terverifikasi (daftar putih bawaan: bca.co.id).
 Tidak ditemukan sinyal mencurigakan.
 ```
@@ -279,14 +296,15 @@ latihan mode batch.
 
 ## Menjalankan test
 
-31 unit test (analisis skor/sinyal, deteksi brand, CLI end-to-end):
+74 unit test (analisis skor/sinyal, deteksi brand, CLI end-to-end, daftar
+putih, dan skor reputasi):
 
 ```bash
 python3 -m unittest discover -s tests
 ```
 
 ```
-Ran 31 tests in 0.5s
+Ran 74 tests in 2.1s
 
 OK
 ```
@@ -298,7 +316,7 @@ OK
 - [x] Cek tautan dari teks pesan + mode batch
 - [x] Unit test + data contoh
 - [x] README lengkap + polish CLI
-- [ ] Skor reputasi domain / daftar putih domain resmi (Day-2)
+- [x] Skor reputasi domain / daftar putih domain resmi (Day-2)
 
 ## Lisensi
 
