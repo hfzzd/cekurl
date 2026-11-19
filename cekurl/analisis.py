@@ -65,6 +65,10 @@ def analisis_url(url):
 
     Melempar ValueError bila URL tidak bisa dipahami.
     """
+    # Impor di sini (bukan di atas) supaya tidak impor melingkar:
+    # reputasi.py memakai PEMENDEK_URL/TLD_MENCURIGAKAN dari modul ini.
+    from cekurl.reputasi import reputasi_domain
+
     url = normalisasi_url(url)
     parsed = urlparse(url)
     if parsed.scheme not in ("http", "https"):
@@ -86,6 +90,7 @@ def analisis_url(url):
             "skor": 0,
             "verdict": "AMAN",
             "sinyal": [],
+            "reputasi": reputasi_domain(host),
             "catatan": (
                 f"Domain resmi terverifikasi ({putih['sumber']}: "
                 f"{putih['domain']})."
@@ -195,6 +200,7 @@ def analisis_url(url):
         "skor": skor,
         "verdict": _verdict(skor),
         "sinyal": sinyal,
+        "reputasi": reputasi_domain(host),
         "catatan": "",
     }
 
@@ -205,6 +211,11 @@ def format_hasil(hasil):
         f"Tautan : {hasil['url']}",
         f"Skor   : {hasil['skor']}/100 — {hasil['verdict']}",
     ]
+    reputasi = hasil.get("reputasi")
+    if reputasi:
+        baris.append(
+            f"Reputasi: {reputasi['skor']}/100 — {reputasi['tier']}"
+        )
     if hasil.get("catatan"):
         baris.append(hasil["catatan"])
     if not hasil["sinyal"]:

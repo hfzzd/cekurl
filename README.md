@@ -199,6 +199,58 @@ BPJS — lalu menandai domain yang meniru mereka (**+25 poin**):
 Domain resmi brand itu sendiri (termasuk subdomainnya, mis.
 `login.bca.co.id`) tidak ditandai.
 
+## Skor reputasi domain
+
+Selain skor risiko tautan, CekURL menghitung **skor reputasi domain**
+(0–100, makin tinggi makin tepercaya) dari nama domainnya saja.
+Perintah `cekurl reputasi URL` menampilkannya beserta faktor-faktornya,
+dan perintah `cek` juga menampilkan satu baris `Reputasi: X/100 — TIER`.
+
+Cara hitungnya — berangkat dari 50 (netral):
+
+| Faktor | Poin |
+| --- | --- |
+| Domain resmi terverifikasi (daftar putih) | 100 langsung |
+| Host berupa alamat IP | 0 langsung |
+| TLD resmi Indonesia (.go.id/.ac.id/.sch.id) | +30 |
+| TLD Indonesia (.co.id/.or.id/.web.id/.id) | +15 |
+| TLD umum (.com/.net/.org) | +5 |
+| TLD yang sering dipakai penipu (.xyz, .top, .click, ...) | −20 |
+| Punycode (xn--) | −15 |
+| Subdomain berlapis (≥ 5 bagian) | −10 |
+| Nama domain sangat panjang (> 30 karakter) | −5 |
+| Banyak tanda hubung (≥ 4) | −5 |
+| Meniru brand lokal | −25 |
+| Pemendek URL (bit.ly, s.id, ...) | −15 |
+
+Skor dijepit 0–100, lalu dipetakan ke tier:
+
+- **≥ 70 — TERPERCAYA**: domain dikenal atau TLD-nya resmi.
+- **40–69 — NETRAL**: tidak ada sinyal kuat ke arah mana pun.
+- **< 40 — MERAGUKAN**: ada pola yang patut dicurigai.
+
+Contoh angka:
+
+```bash
+$ python -m cekurl.cli reputasi https://www.bca.co.id
+Domain   : www.bca.co.id
+Reputasi : 100/100 — TERPERCAYA
+Faktor:
+  - Domain resmi terverifikasi (daftar putih bawaan: bca.co.id). (+50)
+
+$ python -m cekurl.cli reputasi https://bit.ly/paket-tertunda
+Domain   : bit.ly
+Reputasi : 35/100 — MERAGUKAN
+Faktor:
+  - Pemendek URL (bit.ly) menyembunyikan tujuan asli tautan. (-15)
+
+$ python -m cekurl.cli reputasi http://203.0.113.5/login-gratis
+Domain   : 203.0.113.5
+Reputasi : 0/100 — MERAGUKAN
+Faktor:
+  - Host berupa alamat IP — tidak ada reputasi domain. (-50)
+```
+
 ## Cara kerja skor
 
 Setiap sinyal menambah poin risiko. Total skor menentukan verdict:

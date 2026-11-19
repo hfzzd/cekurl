@@ -4,9 +4,11 @@ import argparse
 import json
 import re
 import sys
+from urllib.parse import urlparse
 
 from cekurl import __version__
-from cekurl.analisis import analisis_url, format_hasil
+from cekurl.analisis import analisis_url, format_hasil, normalisasi_url
+from cekurl.reputasi import format_reputasi, reputasi_domain
 from cekurl.putih import (
     cek_daftar_putih,
     daftar_putih_bawaan,
@@ -79,6 +81,12 @@ def _parser():
         required=True,
         help="Berkas daftar tautan (satu URL per baris, # untuk komentar)",
     )
+
+    reputasi = sub.add_parser(
+        "reputasi",
+        help="Lihat skor reputasi domain dari sebuah tautan.",
+    )
+    reputasi.add_argument("url", help="Tautan yang mau diperiksa domainnya")
 
     putih = sub.add_parser(
         "putih", help="Kelola daftar putih domain resmi yang dipercaya."
@@ -178,12 +186,30 @@ def _perintah_batch(args):
     return _tampilkan_banyak(daftar_url)
 
 
+def _perintah_reputasi(args):
+    """Tampilkan skor reputasi domain dari sebuah tautan."""
+    try:
+        url = normalisasi_url(args.url)
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            raise ValueError(
+                f"Skema '{parsed.scheme}' tidak dikenal — pakai tautan "
+                "http atau https."
+            )
+        host = (parsed.hostname or "").lower()
+        if not host:
+            raise ValueError("URL tidak punya nama host.")
+    except ValueError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+    print(format_reputasi(reputasi_domain(host), host))
+    return 0
+
+
 def _perintah_putih_cek(args):
     """Periksa apakah domain ada di daftar putih (bawaan/kustom/akhiran)."""
     domain = args.domain.strip()
     if "://" in domain:
-        from urllib.parse import urlparse
-
         domain = urlparse(domain).hostname or domain
     hasil = cek_daftar_putih(domain)
     if hasil:
@@ -253,6 +279,8 @@ def main(argv=None):
         return _perintah_pesan(args)
     if args.perintah == "batch":
         return _perintah_batch(args)
+    if args.perintah == "reputasi":
+        return _perintah_reputasi(args)
     if args.perintah == "putih":
         if args.subperintah == "cek":
             return _perintah_putih_cek(args)
