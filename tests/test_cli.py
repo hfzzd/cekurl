@@ -61,10 +61,10 @@ class TestPerintahCek(unittest.TestCase):
         self.assertNotEqual(hasil.returncode, 0)
         self.assertIn("Error", hasil.stderr)
 
-    def test_version_tampil_0_1_0(self):
+    def test_version_tampil_0_2_0(self):
         hasil = jalankan("--version")
         self.assertEqual(hasil.returncode, 0)
-        self.assertIn("cekurl 0.1.0", hasil.stdout)
+        self.assertIn("cekurl 0.2.0", hasil.stdout)
 
 
 class TestPerintahPutih(unittest.TestCase):

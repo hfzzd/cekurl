@@ -57,6 +57,19 @@ class TestTier(unittest.TestCase):
 
 
 class TestFaktor(unittest.TestCase):
+    def test_tld_indonesia_dua_label_tampil_benar(self):
+        # bca-co.id: 50 + 15 (.id) - 25 (meniru BCA) = 40; teks faktor
+        # harus menyebut ".id", bukan ".bca-co.id".
+        hasil = reputasi_domain("bca-co.id")
+        self.assertEqual(hasil["skor"], 40)
+        self.assertTrue(
+            any(".id (terdaftar di Indonesia)" in f["alasan"]
+                for f in hasil["faktor"])
+        )
+        self.assertFalse(
+            any(".bca-co.id" in f["alasan"] for f in hasil["faktor"])
+        )
+
     def test_tld_indonesia_plus_15(self):
         hasil = reputasi_domain("tokoku.co.id")
         self.assertEqual(poin_faktor(hasil, "co.id"), 15)

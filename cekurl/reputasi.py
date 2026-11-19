@@ -98,7 +98,10 @@ def reputasi_domain(host):
             30,
         )
     elif akhiran in TLD_ID_BIASA or tld == "id":
-        tambah(f"Domain memakai TLD .{akhiran} (terdaftar di Indonesia).", 15)
+        # Host dua label seperti "bca-co.id": akhirannya bukan TLD-nya,
+        # jadi tampilkan TLD yang benar (".id"), bukan ".bca-co.id".
+        sufiks = akhiran if akhiran in TLD_ID_BIASA else tld
+        tambah(f"Domain memakai TLD .{sufiks} (terdaftar di Indonesia).", 15)
     elif tld in TLD_UMUM:
         tambah(f"Domain memakai TLD .{tld} yang umum.", 5)
     if tld in TLD_MENCURIGAKAN:

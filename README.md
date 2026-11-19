@@ -117,7 +117,7 @@ Error: berkas '/tmp/cekurl-tidak-ada.txt' tidak ditemukan. Periksa lagi nama dan
 ```bash
 pip install .
 cekurl cek https://www.google.com
-cekurl --version   # cekurl 0.1.0
+cekurl --version   # cekurl 0.2.0
 ```
 
 ## Contoh nyata dengan angka
@@ -296,7 +296,7 @@ latihan mode batch.
 
 ## Menjalankan test
 
-74 unit test (analisis skor/sinyal, deteksi brand, CLI end-to-end, daftar
+75 unit test (analisis skor/sinyal, deteksi brand, CLI end-to-end, daftar
 putih, dan skor reputasi):
 
 ```bash
@@ -304,7 +304,7 @@ python3 -m unittest discover -s tests
 ```
 
 ```
-Ran 74 tests in 2.1s
+Ran 75 tests in 2.1s
 
 OK
 ```
